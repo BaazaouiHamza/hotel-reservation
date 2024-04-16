@@ -1,8 +1,20 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"flag"
+
+	"github.com/baazaouihamza/hotel-reservation/api"
+	"github.com/gofiber/fiber/v2"
+)
 
 func main() {
+	listenAddr := flag.String("listenAddr", ":5000", "The listen address of the API server")
+	flag.Parse()
+
 	app := fiber.New()
-	app.Listen(":5000")
+	apiv1 := app.Group("api/v1")
+
+	apiv1.Get("/user", api.HandleGetUsers)
+	apiv1.Get("/user/:id", api.HandleGetUser)
+	app.Listen(*listenAddr)
 }
