@@ -12,10 +12,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const dburi = "mongodb://localhost:27017"
-const dbName = "hotel-reservation"
-const userColl = "users"
-
 // Create a new fiber instance with custom config
 var config = fiber.Config{
 	ErrorHandler: func(c *fiber.Ctx, err error) error {
@@ -30,7 +26,7 @@ func main() {
 	flag.Parse()
 
 	// create connection options
-	clientOptions := options.Client().ApplyURI(dburi)
+	clientOptions := options.Client().ApplyURI(db.DBURI)
 	clientOptions.SetAuth(options.Credential{
 		Username: "admin",
 		Password: "password",
@@ -43,7 +39,7 @@ func main() {
 	}
 
 	// handlers initialization
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, dbName))
+	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, db.DBNAME))
 
 	app := fiber.New(config)
 	apiv1 := app.Group("api/v1")
