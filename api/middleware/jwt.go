@@ -3,29 +3,34 @@ package middleware
 import (
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 func JWTAuthentication(c *fiber.Ctx) error {
-	fmt.Println("-- JWT auth")
 
 	token := c.Get("X-Api-Token")
 	if len(token) == 0 {
 		return fmt.Errorf("unauthorized")
 	}
 
-	fmt.Println("Token", token)
-
-	if err := parseToken(token); err != nil {
+	claims, err := parseToken(token)
+	if err != nil {
 		return err
+	}
+
+	// Check token expiration
+	expires := claims["expires"].(float64)
+	if time.Now().Unix() > int64(expires) {
+		return fmt.Errorf("token expired")
 	}
 
 	return c.Next()
 }
 
-func parseToken(tokenStr string) error {
+func parseToken(tokenStr string) (jwt.MapClaims, error) {
 	// Parse takes the token string and a function for looking up the key. The latter is especially
 	// useful if you use multiple keys for your application.  The standard is to use 'kid' in the
 	// head of the token to identify which key to use, but the parsed token (head and claims) is provided
@@ -37,18 +42,23 @@ func parseToken(tokenStr string) error {
 			return nil, fmt.Errorf("unauthorized")
 		}
 		secret := os.Getenv("JWT_SECRET")
-		fmt.Println("NEVER PRINT SECRET", secret)
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
 		return []byte(secret), nil
 	})
 	if err != nil {
 		fmt.Println("failed to parse JWT token", err)
-		return fmt.Errorf("unauthorized")
+		return nil, fmt.Errorf("unauthorized")
 	}
 
-	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
+	if !token.Valid {
+		fmt.Println("invalid token")
+		return nil, fmt.Errorf("unauthorized")
 	}
 
-	return fmt.Errorf("unauthorized")
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if !ok {
+		return nil, fmt.Errorf("unauthorized")
+	}
+
+	return claims, nil
 }
