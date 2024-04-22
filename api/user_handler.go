@@ -26,6 +26,7 @@ func (h *UserHandler) HandleDeleteUser(c *fiber.Ctx) error {
 	if err := h.userStore.DeleteUser(c.Context(), userId); err != nil {
 		return err
 	}
+
 	return c.JSON(map[string]string{
 		"deleted": userId,
 	})
