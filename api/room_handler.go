@@ -42,6 +42,7 @@ func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+
 	return c.JSON(rooms)
 }
 
