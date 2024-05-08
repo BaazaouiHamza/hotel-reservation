@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/baazaouihamza/hotel-reservation/api/middleware"
 	"github.com/baazaouihamza/hotel-reservation/db/fixtures"
 	"github.com/baazaouihamza/hotel-reservation/types"
 	"github.com/gofiber/fiber/v2"
@@ -26,7 +25,7 @@ func TestUserGetBooking(t *testing.T) {
 		till          = from.AddDate(0, 0, 5)
 		booking       = fixtures.AddBooking(db.Store, user.ID, room.ID, from, till)
 		app           = fiber.New()
-		route         = app.Group("/", middleware.JWTAuthentication(db.User))
+		route         = app.Group("/", JWTAuthentication(db.User))
 		bookingHadler = NewBookingHandler(db.Store)
 	)
 	route.Get("/:id", bookingHadler.HandlerGetBooking)
@@ -36,7 +35,7 @@ func TestUserGetBooking(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if resp.StatusCode != http.StatusInternalServerError {
+	if resp.StatusCode != http.StatusOK {
 		t.Fatalf("non 200 code got %d", resp.StatusCode)
 	}
 	var bookingResp *types.Booking
@@ -60,7 +59,7 @@ func TestAdminGetBookings(t *testing.T) {
 		till          = from.AddDate(0, 0, 5)
 		booking       = fixtures.AddBooking(db.Store, user.ID, room.ID, from, till)
 		app           = fiber.New()
-		admin         = app.Group("/", middleware.JWTAuthentication(db.User), middleware.AdminAuth)
+		admin         = app.Group("/", JWTAuthentication(db.User), AdminAuth)
 		bookingHadler = NewBookingHandler(db.Store)
 	)
 
