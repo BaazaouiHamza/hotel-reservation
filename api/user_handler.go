@@ -6,8 +6,6 @@ import (
 	"github.com/baazaouihamza/hotel-reservation/db"
 	"github.com/baazaouihamza/hotel-reservation/types"
 	"github.com/gofiber/fiber/v2"
-	"go.mongodb.org/mongo-driver/bson"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -39,17 +37,10 @@ func (h *UserHandler) HandlePutUser(c *fiber.Ctx) error {
 		userID = c.Params("id")
 	)
 
-	oid, err := primitive.ObjectIDFromHex(userID)
-	if err != nil {
-		return ErrInvalidID()
-	}
-
 	if err := c.BodyParser(&params); err != nil {
 		return ErrBadRequest()
 	}
-	filter := bson.M{
-		"_id": oid,
-	}
+	filter := db.Map{"_id": userID}
 	if err := h.userStore.UpdateUser(c.Context(), filter, params); err != nil {
 		return err
 	}
